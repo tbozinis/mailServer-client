@@ -60,6 +60,7 @@ public class Request implements Serializable{
     public Request(String sender, Client client) {
         this.sender = sender;
         this.client = client;
+        this.type=Type.NEW_CLIENT;
     }
     
     

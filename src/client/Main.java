@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mail.*;
@@ -18,34 +19,87 @@ import mail.*;
  * @author admin
  */
 public class Main {
+
     private Socket requestSocket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
 
-    public Main() {
-    }
+    private Scanner s;
+
+    //the program's client
+    private Client client;
+
+    private Request request;
     
-    private void sendR(Request r) throws InterruptedException
-    {
+    public Main() {
+
+        client = null;
+
         try {
             requestSocket = new Socket("localhost", 3000);
             System.out.println("Connected to localhost in port 2004");
-            out = new ObjectOutputStream(requestSocket.getOutputStream());
+            out = new ObjectOutputStream(requestSocket.getOutputStream());//,true
             out.flush();
-            
-            out.writeObject(r);
-            Thread.sleep(1000);
-            out.flush();
-            
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public static void main(String[] args) throws InterruptedException {
-        Request r = new Request("teo", new Client("teo"));
+
+    private void sendR(Request r) throws InterruptedException, IOException {
+        out.flush();
+        out.writeObject(r);
+//        Thread.sleep(1000);
+        out.flush();
+
+        s = new Scanner(System.in);
+    }
+
+    private void printLoginMenu() {
+        System.out.println("1. Login");
+        System.out.println("\n2. Creat new account...");
+
+        int r = 0;
+        boolean f = true;
+        while (f) {
+            try {
+                r = Integer.parseInt(s.nextLine());
+                if (r == 1 || r == 2) {
+                    f = false;
+                }
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
+        }
+
+        switch (r) {
+            case 1:
+                loggin();
+                break;
+            case 2:
+                creatAcc();
+                break;
+        }
+    }
+
+    private void loggin() {
         
+    }
+
+    private void creatAcc() {
+    }
+
+    private boolean isClientLogedIn()
+    {
+        return client != null;
+    }
+    
+    public static void main(String[] args) throws InterruptedException, IOException {
         Main m = new Main();
+//        while (!m.isClientLogedIn()) {            
+//            m.printLoginMenu();
+//        }
+        
+        Request r = new Request("teo", new Client("teo"));
         m.sendR(r);
     }
 }
