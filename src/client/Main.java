@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,8 @@ import mail.*;
  */
 public class Main {
 
+    private boolean clientLogedIn;
+
     private Socket requestSocket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -27,79 +30,263 @@ public class Main {
     private Scanner s;
 
     //the program's client
-    private Client client;
+    private String username;
 
-    private Request request;
-    
-    public Main() {
-
-        client = null;
-
+    public void connect() {
         try {
             requestSocket = new Socket("localhost", 3000);
-            System.out.println("Connected to localhost in port 2004");
-            out = new ObjectOutputStream(requestSocket.getOutputStream());//,true
+            out = new ObjectOutputStream(requestSocket.getOutputStream());//true
             out.flush();
+            in = new ObjectInputStream(requestSocket.getInputStream());
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void sendR(Request r) throws InterruptedException, IOException {
-        out.flush();
-        out.writeObject(r);
-//        Thread.sleep(1000);
-        out.flush();
-
+    public Main() {
         s = new Scanner(System.in);
     }
 
-    private void printLoginMenu() {
-        System.out.println("1. Login");
-        System.out.println("\n2. Creat new account...");
+    private void sendR(Request r) throws InterruptedException, IOException {
+        out.flush();
+        out.writeObject(r);
+    }
 
-        int r = 0;
-        boolean f = true;
-        while (f) {
-            try {
-                r = Integer.parseInt(s.nextLine());
-                if (r == 1 || r == 2) {
-                    f = false;
-                }
-            } catch (Exception e) {
-                System.out.println(e.toString());
-            }
-        }
+    private Answer getAnswer() throws IOException, ClassNotFoundException {
+        return (Answer) in.readObject();
+    }
+
+    private void printLoginMenu() throws IOException {
+        connect();
+
+        System.out.println(">login");
+        System.out.println(">new account");
+
+        String r = s.nextLine();
 
         switch (r) {
-            case 1:
+            case "login":
                 loggin();
                 break;
-            case 2:
+            case "new account":
                 creatAcc();
                 break;
+            default:
+                System.out.println("unidentifed command, try again...");
         }
+        requestSocket.close();
     }
 
     private void loggin() {
-        
+        System.out.print("username: ");
+        String sender = s.nextLine();
+        System.out.print("password: ");
+        String password = s.nextLine();
+        Request r = new Request(sender, password, Request.Type.LOGIN);
+
+        try {
+            sendR(r);
+            Answer a = getAnswer();
+            if (a.getType() == Answer.Type.WRONG_USERNAME) {
+                System.out.println("wrong username...");
+            } else if (a.getType() == Answer.Type.WRONG_PASSWORD) {
+                System.out.println("wrong password...");
+            } else {
+                this.username = sender;
+                clientLogedIn = true;
+            }
+
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     private void creatAcc() {
+        System.out.print("Username: ");
+        String username = s.nextLine();
+        System.out.print("Password: ");
+        String password = s.nextLine();
+
+        Request r = new Request(username, new Client(username, password), Request.Type.NEW_CLIENT);
+        try {
+            sendR(r);
+            Answer a = getAnswer();
+            if (a.getType() == Answer.Type.WRONG_USERNAME) {
+                System.out.println("username already exists...");
+            } else {
+                this.username = username;
+                clientLogedIn = true;
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    private boolean isClientLogedIn()
-    {
-        return client != null;
+    private boolean isClientLogedIn() {
+        return clientLogedIn;
     }
-    
+
+    private int mainMenu() throws IOException {
+        int i = 0;
+
+        System.out.println("> new mail");
+        System.out.println("> show mails");
+        System.out.println("> read mail");
+        System.out.println("> delete mail");
+        System.out.println("> log out");
+        System.out.println("> exit");
+
+        String r = s.nextLine();
+
+        switch (r) {
+            case "new mail":
+                connect();
+                newMail();
+                break;
+            case "show mails":
+                connect();
+                showMails();
+                break;
+            case "read mail":
+                connect();
+                readMail();
+                break;
+            case "delete mail":
+                connect();
+                deleteMail();
+                break;
+            case "exit":
+                i = 1;
+                break;
+            case "log out":
+                System.out.println("desconected...");
+                username=null;
+                do{
+                    printLoginMenu();
+                } while(username==null);
+                break;
+            default:
+                System.out.println("unidentifed command, try again...");
+        }
+        requestSocket.close();
+        return i;
+    }
+
     public static void main(String[] args) throws InterruptedException, IOException {
         Main m = new Main();
-//        while (!m.isClientLogedIn()) {            
-//            m.printLoginMenu();
-//        }
-        
-        Request r = new Request("teo", new Client("teo"));
-        m.sendR(r);
+        while (!m.isClientLogedIn()) {
+            m.printLoginMenu();
+        }
+
+        System.out.println("client logged in: " + m.username);
+
+        int flag = 0;
+        while (flag == 0) {
+            flag = m.mainMenu();
+        }
+
     }
+
+    private void newMail() {
+        Mail m = Mail.creatMail(username, s);
+        Request req = new Request(Request.Type.NEW_MAIL, username, m);
+        {
+            try {
+                sendR(req);
+                Answer a = getAnswer();
+                if (a.type.equals(Answer.Type.WRONG_USERNAME)) {
+                    System.out.println(">>> error: wrong reciver username...");
+                } else if (a.type.equals(Answer.Type.NEW_MAIL_SEND)) {
+                    System.out.println(">>> mail sended...");
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
+    private void showMails() throws IOException {
+        Request req = new Request(Request.Type.GET_MAILS, username);
+        try {
+            sendR(req);
+            Answer a = getAnswer();
+
+            if (a.type.equals(Answer.Type.GET_MAILS_RECEIVING)) {
+                for (String str : (ArrayList<String>) a.getObj()) {
+                    System.out.println(str);
+                }
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void readMail() {
+        System.out.println(">> Type the id of the mail you want to read.");
+
+        String str = s.nextLine();
+        try {
+            int i = Integer.parseInt(str);
+            if (i < 0) {
+                System.out.println(">> Type only numbers > 0...");
+                return;
+            }
+            Request req = new Request(Request.Type.GET_MAIL, username, i);
+            sendR(req);
+            Answer a = getAnswer();
+            if (a.getType().equals(Answer.Type.WRONG_ID)) {
+                System.out.println(">> Id not found...");
+            } else if (a.getType().equals(Answer.Type.MAIL)) {
+                Mail m = (Mail) a.getObj();
+                System.out.println(m.toString());
+            }
+
+        } catch (Exception e) {
+            System.out.println(">> Type numbers only...");
+        }
+
+    }
+
+    private void deleteMail() {
+        System.out.println(">> Type the id of the mail you want to delete.");
+
+        String str = s.nextLine();
+        try {
+            int i = Integer.parseInt(str);
+            if (i < 0) {
+                System.out.println(">> Type only numbers > 0...");
+                return;
+            }
+            Request req = new Request(Request.Type.DELETE_MAIL, username, i);
+            sendR(req);
+            Answer a = getAnswer();
+            if (a.getType().equals(Answer.Type.WRONG_ID)) {
+                System.out.println(">> Id not found...");
+            } else if (a.getType().equals(Answer.Type.MAIL_DELETED)) {
+                System.out.println(">> mail deleted...");
+            }
+
+        } catch (Exception e) {
+            System.out.println(">> Type numbers only...");
+        }
+    }
+
 }
