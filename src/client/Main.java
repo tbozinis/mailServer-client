@@ -23,6 +23,7 @@ public class Main {
 
     private boolean clientLogedIn;
 
+    private int port;
     private Socket requestSocket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -34,17 +35,13 @@ public class Main {
 
     public void connect() {
         try {
-            requestSocket = new Socket("localhost", 3000);
+            requestSocket = new Socket("localhost", port);
             out = new ObjectOutputStream(requestSocket.getOutputStream());//true
             out.flush();
             in = new ObjectInputStream(requestSocket.getInputStream());
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public Main() {
-        s = new Scanner(System.in);
     }
 
     private void sendR(Request r) throws InterruptedException, IOException {
@@ -169,10 +166,10 @@ public class Main {
                 break;
             case "log out":
                 System.out.println("desconected...");
-                username=null;
-                do{
+                username = null;
+                do {
                     printLoginMenu();
-                } while(username==null);
+                } while (username == null);
                 break;
             default:
                 System.out.println("unidentifed command, try again...");
@@ -182,18 +179,30 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        Main m = new Main();
-        while (!m.isClientLogedIn()) {
-            m.printLoginMenu();
+        try {
+            int p = Integer.parseInt(args[0]);
+
+            Main m = new Main(p);
+
+            while (!m.isClientLogedIn()) {
+                m.printLoginMenu();
+            }
+
+            System.out.println("client logged in: " + m.username);
+
+            int flag = 0;
+            while (flag == 0) {
+                flag = m.mainMenu();
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.toString());
         }
 
-        System.out.println("client logged in: " + m.username);
+    }
 
-        int flag = 0;
-        while (flag == 0) {
-            flag = m.mainMenu();
-        }
-
+    public Main(int port) {
+        this.port = port;
+        s = new Scanner(System.in);
     }
 
     private void newMail() {
