@@ -75,8 +75,8 @@ public class Main {
     private void printLoginMenu() throws IOException {
         connect();
 
-        System.out.println(">login");
-        System.out.println(">new account");
+        System.out.println("> login");
+        System.out.println("> new account");
 
         String r = s.nextLine();
 
@@ -202,7 +202,7 @@ public class Main {
             int p = Integer.parseInt(args[0]);
 
             Main m = new Main(p);
-
+            System.out.println("Wellcome to Maria.");
             while (!m.isClientLogedIn()) {
                 m.printLoginMenu();
             }

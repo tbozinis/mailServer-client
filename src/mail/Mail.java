@@ -27,7 +27,7 @@ public class Mail implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public void opened() {
         opened = true;
     }
@@ -76,14 +76,15 @@ public class Mail implements Serializable {
     public int getId() {
         return this.id;
     }
-    
+
     @Override
     public String toString() {
-        String ret = "";
-        ret+="FROM: "+this.sender;
-        ret+="\nSUBJECT: "+this.subject;
-        ret+="\n\n"+this.mainBody;
+        String ret = "\n--------------------------------------------------\n";
+        ret += "FROM: " + this.sender;
+        ret += "\nSUBJECT: " + this.subject;
+        ret += "\n\n" + this.mainBody;
+        ret += "\n--------------------------------------------------";
         return ret;
     }
-    
+
 }
