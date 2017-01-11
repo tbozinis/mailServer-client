@@ -49,9 +49,10 @@ public class Main {
 
     /**
      * Flush the output stream and sends the request at the server.
+     *
      * @param Request
      * @throws InterruptedException
-     * @throws IOException 
+     * @throws IOException
      */
     private void sendR(Request r) throws InterruptedException, IOException {
         out.flush();
@@ -60,9 +61,10 @@ public class Main {
 
     /**
      * Gets the answer from the server.
+     *
      * @return Answer
      * @throws IOException
-     * @throws ClassNotFoundException 
+     * @throws ClassNotFoundException
      */
     private Answer getAnswer() throws IOException, ClassNotFoundException {
         return (Answer) in.readObject();
@@ -70,11 +72,10 @@ public class Main {
 
     /**
      * Connects to server and attempts a login or a new account.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     private void printLoginMenu() throws IOException {
-        connect();
-
         System.out.println("\n> login");
         System.out.println("> new account");
 
@@ -82,19 +83,22 @@ public class Main {
 
         switch (r) {
             case "login":
+                connect();
                 loggin();
+                requestSocket.close();
                 break;
             case "new account":
+                connect();
                 creatAcc();
+                requestSocket.close();
                 break;
             default:
                 System.out.println("unidentifed command, try again...");
         }
-        requestSocket.close();
     }
 
     private void loggin() {
-        System.out.print("username: ");
+        System.out.print("\nusername: ");
         String sender = s.nextLine();
         System.out.print("password: ");
         String password = s.nextLine();
@@ -103,17 +107,19 @@ public class Main {
         try {
             sendR(r);
             Answer a = getAnswer();
-            if (null != a.getType()) switch (a.getType()) {
-                case WRONG_USERNAME:
-                    System.out.println("wrong username...");
-                    break;
-                case WRONG_PASSWORD:
-                    System.out.println("wrong password...");
-                    break;
-                default:
-                    this.username = sender;
-                    clientLogedIn = true;
-                    break;
+            if (null != a.getType()) {
+                switch (a.getType()) {
+                    case WRONG_USERNAME:
+                        System.out.println(">> wrong username...");
+                        break;
+                    case WRONG_PASSWORD:
+                        System.out.println(">> wrong password...");
+                        break;
+                    default:
+                        this.username = sender;
+                        clientLogedIn = true;
+                        break;
+                }
             }
 
         } catch (InterruptedException | IOException | ClassNotFoundException ex) {
@@ -123,7 +129,7 @@ public class Main {
     }
 
     private void creatAcc() {
-        System.out.print("Username: ");
+        System.out.print("\nUsername: ");
         String tempUsername = s.nextLine();
         System.out.print("Password: ");
         String password = s.nextLine();
@@ -133,7 +139,7 @@ public class Main {
             sendR(r);
             Answer a = getAnswer();
             if (a.getType() == Answer.Type.WRONG_USERNAME) {
-                System.out.println("username already exists...");
+                System.out.println(">> username already exists...");
             } else {
                 this.username = tempUsername;
                 clientLogedIn = true;
@@ -163,18 +169,22 @@ public class Main {
             case "new mail":
                 connect();
                 newMail();
+                requestSocket.close();
                 break;
             case "show mails":
                 connect();
                 showMails();
+                requestSocket.close();
                 break;
             case "read mail":
                 connect();
                 readMail();
+                requestSocket.close();
                 break;
             case "delete mail":
                 connect();
                 deleteMail();
+                requestSocket.close();
                 break;
             case "exit":
                 i = 1;
@@ -189,7 +199,6 @@ public class Main {
             default:
                 System.out.println("unidentifed command, try again...");
         }
-        requestSocket.close();
         return i;
     }
 
