@@ -33,6 +33,9 @@ public class Main {
     //the program's client
     private String username;
 
+    /**
+     * Establish a connection with the server to localhost at the given port.
+     */
     public void connect() {
         try {
             requestSocket = new Socket("localhost", port);
@@ -44,15 +47,31 @@ public class Main {
         }
     }
 
+    /**
+     * Flush the output stream and sends the request at the server.
+     * @param Request
+     * @throws InterruptedException
+     * @throws IOException 
+     */
     private void sendR(Request r) throws InterruptedException, IOException {
         out.flush();
         out.writeObject(r);
     }
 
+    /**
+     * Gets the answer from the server.
+     * @return Answer
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
     private Answer getAnswer() throws IOException, ClassNotFoundException {
         return (Answer) in.readObject();
     }
 
+    /**
+     * Connects to server and attempts a login or a new account.
+     * @throws IOException 
+     */
     private void printLoginMenu() throws IOException {
         connect();
 
@@ -225,7 +244,6 @@ public class Main {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
     }
 
     private void showMails() throws IOException {
@@ -271,7 +289,6 @@ public class Main {
         } catch (Exception e) {
             System.out.println(">> Type numbers only...");
         }
-
     }
 
     private void deleteMail() {
@@ -297,5 +314,4 @@ public class Main {
             System.out.println(">> Type numbers only...");
         }
     }
-
 }
