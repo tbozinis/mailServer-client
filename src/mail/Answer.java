@@ -22,8 +22,7 @@ public class Answer implements Serializable{
         WRONG_PASSWORD,
         CLIENT,
         WRONG_ID,
-        MAIL,
-        MAIL_DELETED
+        MAIL, MAIL_DELETED
     }
     public Type type;
     

@@ -15,7 +15,6 @@ import java.util.Scanner;
 public class Mail implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     private String sender;
     private String receiver;
     private String subject;
@@ -28,7 +27,7 @@ public class Mail implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-
+    
     public void opened() {
         opened = true;
     }
@@ -77,14 +76,14 @@ public class Mail implements Serializable {
     public int getId() {
         return this.id;
     }
-
+    
     @Override
     public String toString() {
         String ret = "";
-        ret += "FROM: " + this.sender;
-        ret += "\nSUBJECT: " + this.subject;
-        ret += "\n\n" + this.mainBody;
+        ret+="FROM: "+this.sender;
+        ret+="\nSUBJECT: "+this.subject;
+        ret+="\n\n"+this.mainBody;
         return ret;
     }
-
+    
 }

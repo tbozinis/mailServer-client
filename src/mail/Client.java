@@ -67,7 +67,7 @@ public class Client implements Serializable {
     public Mail getMail(int mailI) {
         return arcive.get(mailI);
     }
-    
+
     public int deleteMail(int index) {
         if (index >= arcive.size() || index < 0) {
             return 1;
