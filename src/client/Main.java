@@ -103,20 +103,20 @@ public class Main {
         try {
             sendR(r);
             Answer a = getAnswer();
-            if (a.getType() == Answer.Type.WRONG_USERNAME) {
-                System.out.println("wrong username...");
-            } else if (a.getType() == Answer.Type.WRONG_PASSWORD) {
-                System.out.println("wrong password...");
-            } else {
-                this.username = sender;
-                clientLogedIn = true;
+            if (null != a.getType()) switch (a.getType()) {
+                case WRONG_USERNAME:
+                    System.out.println("wrong username...");
+                    break;
+                case WRONG_PASSWORD:
+                    System.out.println("wrong password...");
+                    break;
+                default:
+                    this.username = sender;
+                    clientLogedIn = true;
+                    break;
             }
 
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | IOException | ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -124,25 +124,21 @@ public class Main {
 
     private void creatAcc() {
         System.out.print("Username: ");
-        String username = s.nextLine();
+        String tempUsername = s.nextLine();
         System.out.print("Password: ");
         String password = s.nextLine();
 
-        Request r = new Request(username, new Client(username, password), Request.Type.NEW_CLIENT);
+        Request r = new Request(tempUsername, new Client(tempUsername, password), Request.Type.NEW_CLIENT);
         try {
             sendR(r);
             Answer a = getAnswer();
             if (a.getType() == Answer.Type.WRONG_USERNAME) {
                 System.out.println("username already exists...");
             } else {
-                this.username = username;
+                this.username = tempUsername;
                 clientLogedIn = true;
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | IOException | ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -213,7 +209,7 @@ public class Main {
             while (flag == 0) {
                 flag = m.mainMenu();
             }
-        } catch (Exception ex) {
+        } catch (NumberFormatException | IOException ex) {
             System.out.println(ex.toString());
         }
 
@@ -236,11 +232,7 @@ public class Main {
                 } else if (a.type.equals(Answer.Type.NEW_MAIL_SEND)) {
                     System.out.println(">>> mail sended...");
                 }
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
+            } catch (InterruptedException | IOException | ClassNotFoundException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -257,11 +249,7 @@ public class Main {
                     System.out.println(str);
                 }
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | IOException | ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -286,7 +274,7 @@ public class Main {
                 System.out.println(m.toString());
             }
 
-        } catch (Exception e) {
+        } catch (NumberFormatException | InterruptedException | IOException | ClassNotFoundException e) {
             System.out.println(">> Type numbers only...");
         }
     }
@@ -310,7 +298,7 @@ public class Main {
                 System.out.println(">> mail deleted...");
             }
 
-        } catch (Exception e) {
+        } catch (NumberFormatException | InterruptedException | IOException | ClassNotFoundException e) {
             System.out.println(">> Type numbers only...");
         }
     }
